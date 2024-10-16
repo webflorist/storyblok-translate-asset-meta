@@ -224,25 +224,31 @@ const isFieldTranslatable = (componentName, fieldName) => {
 	return component.schema[fieldName].translatable || false
 }
 
+// Used to check if story update is required
 let storyUpdateRequired = false
 
+// Check if item is an object
 const isObject = (item) => typeof item === 'object' && !Array.isArray(item) && item !== null
 
+// Check if item is an asset object
 const isAssetObject = (item) =>
 	isObject(item) && 'fieldtype' in item && item.fieldtype === 'asset' && item.filename
 
+// Perform translation of an asset field
 const translateAssetField = async (value, locale) => {
 	const translatedValue = await translate(value, locale)
 	verboseLog(`      Translation to "${locale}": ${translatedValue}`)
 	return translatedValue
 }
 
+// Write console.log, if verbose mode is enabled
 const verboseLog = (...args) => {
 	if (verbose) {
 		console.log(...args)
 	}
 }
 
+// Parse content node of a story.
 const parseContentNode = async (node) => {
 	if (isObject(node)) {
 		for (const [key, subNode] of Object.entries(node)) {
@@ -355,6 +361,7 @@ const parseContentNode = async (node) => {
 	return node
 }
 
+// Process stories
 console.log('')
 console.log(`Processing stories...`)
 for (const story of stories) {
