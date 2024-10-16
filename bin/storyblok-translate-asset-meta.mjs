@@ -205,6 +205,25 @@ for (const story of storyList) {
 	}
 }
 
+// Fetch all components
+console.log('')
+console.log(`Fetching components...`)
+const components = await StoryblokMAPI.getAll(`spaces/${spaceId}/components`)
+
+// Check if field is translatable
+const isFieldTranslatable = (componentName, fieldName) => {
+	const component = components.find((component) => component.name === componentName)
+	if (!component) {
+		console.log(`Error: Component "${componentName}" not found in component list.`)
+		process.exit(1)
+	}
+	if (!(fieldName in component.schema)) {
+		console.log(`Error: field "${fieldName}" not found in component "${componentName}".`)
+		process.exit(1)
+	}
+	return component.schema[fieldName].translatable || false
+}
+
 let storyUpdateRequired = false
 
 const isObject = (item) => typeof item === 'object' && !Array.isArray(item) && item !== null
@@ -235,6 +254,11 @@ const parseContentNode = async (node) => {
 			// If subnode is a single asset field...
 			if (isAssetObject(subNode)) {
 				verboseLog(`- Single asset field "${key}":`)
+
+				if (!isFieldTranslatable(node.component, key)) {
+					verboseLog(`  Field is not marked as translatable. Skipping.`)
+					continue
+				}
 
 				// Establish languages to translate
 				const locales2Process = []
@@ -272,6 +296,11 @@ const parseContentNode = async (node) => {
 			// If subnode is a multi-asset field...
 			else if (Array.isArray(subNode) && subNode.length > 0 && isAssetObject(subNode[0])) {
 				verboseLog(`- Multi asset field "${key}":`)
+
+				if (!isFieldTranslatable(node.component, key)) {
+					verboseLog(`  Field is not marked as translatable. Skipping.`)
+					continue
+				}
 
 				// Establish languages to translate
 				const locales2Process = []
