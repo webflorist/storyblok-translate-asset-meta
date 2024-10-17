@@ -282,14 +282,14 @@ const parseContentNode = async (node) => {
 					verboseLog(`  - Asset ${subNode.filename}:`)
 					for (const field of fields) {
 						verboseLog(`    - Field "${field}":`)
-						if (!subNode[field]) {
+						if (!subNode.meta_data[field]) {
 							verboseLog(`      Not set in default language. Skipping.`)
 							continue
 						}
-						verboseLog(`      Default value: ${subNode[field]}`)
+						verboseLog(`      Default value: ${subNode.meta_data[field]}`)
 						for (const locale of locales2Process) {
 							const translatedValue = await translateAssetField(
-								subNode[field],
+								subNode.meta_data[field],
 								locale
 							)
 							node[`${key}__i18n__${locale}`][field] = translatedValue
@@ -326,14 +326,14 @@ const parseContentNode = async (node) => {
 						verboseLog(`  - Asset ${item.filename}:`)
 						for (const field of fields) {
 							verboseLog(`    - Field "${field}":`)
-							if (!item[field]) {
+							if (!item.meta_data[field]) {
 								verboseLog(`      Not set in default language. Skipping.`)
 								continue
 							}
-							verboseLog(`      Default value: ${item[field]}`)
+							verboseLog(`      Default value: ${item.meta_data[field]}`)
 							for (const locale of locales2Process) {
 								const translatedValue = await translateAssetField(
-									item[field],
+									item.meta_data[field],
 									locale
 								)
 								node[`${key}__i18n__${locale}`][i][field] = translatedValue
