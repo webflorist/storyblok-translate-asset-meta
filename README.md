@@ -73,6 +73,7 @@ Call `npx storyblok-translate-asset-meta` with the following options:
                                (e.g. --locales "de,fr")
 --overwrite                    Overwrites existing translations. Defaults to false.
 --publish                      Publish stories after updating. Defaults to false.
+                               WARNING: May publish previously unpublished stories.
 --dry-run                      Only display the changes instead of performing them. Defaults to false.
 --verbose                      Show detailed output for every processed asset.
 --help                         Show this help
