@@ -101,7 +101,7 @@ npx storyblok-translate-asset-meta \
     --locales "de,fr" \
     --overwrite \
     --publish \
-    --dry-run
+    --dry-run \
     --verbose
 ```
 

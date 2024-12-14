@@ -68,7 +68,7 @@ MAXIMAL EXAMPLE
       --locales "de,fr" \\
       --overwrite \\
       --publish \\
-      --dry-run
+      --dry-run \\
       --verbose
 `)
 	process.exit(0)
