@@ -206,25 +206,50 @@ for (const story of storyList) {
 	}
 }
 
+// Fetch all components
+console.log('')
+console.log(`Fetching components...`)
+const components = await StoryblokMAPI.getAll(`spaces/${spaceId}/components`)
+
+// Check if field is translatable
+const isFieldTranslatable = (componentName, fieldName) => {
+	const component = components.find((component) => component.name === componentName)
+	if (!component) {
+		console.log(`Error: Component "${componentName}" not found in component list.`)
+		process.exit(1)
+	}
+	if (!(fieldName in component.schema)) {
+		console.log(`Error: field "${fieldName}" not found in component "${componentName}".`)
+		process.exit(1)
+	}
+	return component.schema[fieldName].translatable || false
+}
+
+// Used to check if story update is required
 let storyUpdateRequired = false
 
+// Check if item is an object
 const isObject = (item) => typeof item === 'object' && !Array.isArray(item) && item !== null
 
+// Check if item is an asset object
 const isAssetObject = (item) =>
 	isObject(item) && 'fieldtype' in item && item.fieldtype === 'asset' && item.filename
 
+// Perform translation of an asset field
 const translateAssetField = async (value, locale) => {
 	const translatedValue = await translate(value, locale)
 	verboseLog(`      Translation to "${locale}": ${translatedValue}`)
 	return translatedValue
 }
 
+// Write console.log, if verbose mode is enabled
 const verboseLog = (...args) => {
 	if (verbose) {
 		console.log(...args)
 	}
 }
 
+// Parse content node of a story.
 const parseContentNode = async (node) => {
 	if (isObject(node)) {
 		for (const [key, subNode] of Object.entries(node)) {
@@ -236,6 +261,11 @@ const parseContentNode = async (node) => {
 			// If subnode is a single asset field...
 			if (isAssetObject(subNode)) {
 				verboseLog(`- Single asset field "${key}":`)
+
+				if (!isFieldTranslatable(node.component, key)) {
+					verboseLog(`  Field is not marked as translatable. Skipping.`)
+					continue
+				}
 
 				// Establish languages to translate
 				const locales2Process = []
@@ -253,14 +283,14 @@ const parseContentNode = async (node) => {
 					verboseLog(`  - Asset ${subNode.filename}:`)
 					for (const field of fields) {
 						verboseLog(`    - Field "${field}":`)
-						if (!subNode[field]) {
+						if (!subNode.meta_data[field]) {
 							verboseLog(`      Not set in default language. Skipping.`)
 							continue
 						}
-						verboseLog(`      Default value: ${subNode[field]}`)
+						verboseLog(`      Default value: ${subNode.meta_data[field]}`)
 						for (const locale of locales2Process) {
 							const translatedValue = await translateAssetField(
-								subNode[field],
+								subNode.meta_data[field],
 								locale
 							)
 							node[`${key}__i18n__${locale}`][field] = translatedValue
@@ -273,6 +303,11 @@ const parseContentNode = async (node) => {
 			// If subnode is a multi-asset field...
 			else if (Array.isArray(subNode) && subNode.length > 0 && isAssetObject(subNode[0])) {
 				verboseLog(`- Multi asset field "${key}":`)
+
+				if (!isFieldTranslatable(node.component, key)) {
+					verboseLog(`  Field is not marked as translatable. Skipping.`)
+					continue
+				}
 
 				// Establish languages to translate
 				const locales2Process = []
@@ -292,14 +327,14 @@ const parseContentNode = async (node) => {
 						verboseLog(`  - Asset ${item.filename}:`)
 						for (const field of fields) {
 							verboseLog(`    - Field "${field}":`)
-							if (!item[field]) {
+							if (!item.meta_data[field]) {
 								verboseLog(`      Not set in default language. Skipping.`)
 								continue
 							}
-							verboseLog(`      Default value: ${item[field]}`)
+							verboseLog(`      Default value: ${item.meta_data[field]}`)
 							for (const locale of locales2Process) {
 								const translatedValue = await translateAssetField(
-									item[field],
+									item.meta_data[field],
 									locale
 								)
 								node[`${key}__i18n__${locale}`][i][field] = translatedValue
@@ -327,6 +362,7 @@ const parseContentNode = async (node) => {
 	return node
 }
 
+// Process stories
 console.log('')
 console.log(`Processing stories...`)
 for (const story of stories) {
