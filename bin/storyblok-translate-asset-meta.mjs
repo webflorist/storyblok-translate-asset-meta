@@ -151,7 +151,13 @@ const translate = async (text, targetLang) => {
 		return translationCache[targetLang][text]
 	}
 
-	const translationResult = await translator.translateText(text, sourceLang, targetLang)
+	let deeplTargetLang = targetLang
+	// 'en' is not supported by DeepL, so we use 'en-GB' instead.
+	if (deeplTargetLang === 'en') {
+		deeplTargetLang = 'en-GB'
+	}
+
+	const translationResult = await translator.translateText(text, sourceLang, deeplTargetLang)
 
 	translationCache[targetLang][text] = translationResult.text
 
